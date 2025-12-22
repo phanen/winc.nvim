@@ -23,12 +23,10 @@ local point_in_win = function(cspos, win, zindex)
     return false
   end
   local crow, ccol = cspos.row, cspos.col
-  local wspos = fn.screenpos(win, 1, 1) ---@type vim.fn.screenpos.ret
-  ---@diagnostic disable-next-line: preferred-local-alias
-  local wrow, wcol = wspos.row, wspos.col
+  local wrow, wcol = unpack(fn.win_screenpos(win)) ---@type integer, integer
   local has_border = opts.border and opts.border ~= 'none' and opts.border ~= false
-  wrow = has_border and (wrow - 1) or wrow
-  wcol = has_border and (wcol - 1) or wcol
+  wrow = has_border and wrow or wrow + 1
+  wcol = has_border and wcol or wcol + 1
   local height = has_border and (opts.height + 2) or opts.height
   local width = has_border and (opts.width + 2) or opts.width
   local ret = crow >= wrow and crow < wrow + height and ccol >= wcol and ccol < wcol + width
