@@ -58,12 +58,12 @@ local guicursor = function(gcr, hl)
     if v:match('^a:') then
       found_a = true
       local s = v:gsub('(:[^%-]+%-?[^%-]*)$', '%1-' .. hl)
-      new_gc[#new_gc + 1] = s
+      table.insert(new_gc, 1, s)
     else
       new_gc[#new_gc + 1] = v
     end
   end
-  if not found_a then new_gc[#new_gc + 1] = 'a:block-' .. hl end
+  if not found_a then table.insert(new_gc, 1, 'a:block-' .. hl) end
   return new_gc
 end
 
