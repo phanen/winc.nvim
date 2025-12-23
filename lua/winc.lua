@@ -5,6 +5,22 @@ local M = {}
 
 local augid
 
+---@param border? string|table
+---@return integer, integer
+local border_size = function(border)
+  if not border or border == '' or border == 'none' then return 0, 0 end
+  if type(border) == 'string' then return 2, 2 end
+  border = vim.tbl_map(function(b) return type(b) == 'table' and b[1] or b end, border)
+  while #border < 8 do
+    vim.list_extend(border, border)
+  end
+  ---@type fun(a: integer, b: integer, c: integer): integer
+  local size = function(a, b, c)
+    return (border[a] ~= '' or border[b] ~= '' or border[c] ~= '') and 1 or 0
+  end
+  return size(1, 2, 3) + size(5, 6, 7), size(3, 4, 6) + size(7, 8, 1)
+end
+
 --- @class vim.fn.screenpos.ret
 --- @field row integer screen row
 --- @field col integer first screen column
@@ -24,11 +40,9 @@ local point_in_win = function(cspos, win, zindex)
   end
   local crow, ccol = cspos.row, cspos.col
   local wrow, wcol = unpack(fn.win_screenpos(win)) ---@type integer, integer
-  local has_border = opts.border and opts.border ~= 'none' and opts.border ~= false
-  wrow = has_border and wrow or wrow + 1
-  wcol = has_border and wcol or wcol + 1
-  local height = has_border and (opts.height + 2) or opts.height
-  local width = has_border and (opts.width + 2) or opts.width
+  if wrow <= 0 or wcol <= 0 then return false end
+  local bh, bw = border_size(opts.border)
+  local height, width = opts.height + bh, opts.width + bw
   local ret = crow >= wrow and crow < wrow + height and ccol >= wcol and ccol < wcol + width
   return ret
 end
