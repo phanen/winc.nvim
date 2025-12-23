@@ -76,7 +76,8 @@ M.enable = function()
 
   api.nvim_set_hl(0, 'WincErrorCursor', { bg = '#ff0000', fg = '#ffffff' })
   augid = api.nvim_create_augroup('u.winc', { clear = true })
-  api.nvim_create_autocmd({ 'WinEnter', 'CursorMoved', 'WinClosed', 'WinResized' }, {
+  local events = { 'WinEnter', 'WinNew', 'WinClosed', 'WinResized', 'CursorMoved' }
+  api.nvim_create_autocmd(events, {
     group = augid,
     callback = function(ev)
       local wins = ev.event == 'WinResized' and { asinteger(ev.match) } or nil
