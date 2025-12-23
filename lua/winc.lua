@@ -33,13 +33,14 @@ local point_in_win = function(cspos, win, zindex)
   return ret
 end
 
-local check_cursor_covered = function()
+---@param wins? integer[]
+local check_cursor_covered = function(wins)
   local curwin = api.nvim_get_current_win()
   local opts = api.nvim_win_get_config(curwin)
   local cursor = api.nvim_win_get_cursor(curwin)
   local spos = fn.screenpos(curwin, cursor[1], cursor[2] + 1) ---@type vim.fn.screenpos.ret
   local zindex = opts.zindex or 0
-  for _, win in ipairs(api.nvim_tabpage_list_wins(0)) do
+  for _, win in ipairs(wins or api.nvim_tabpage_list_wins(0)) do
     if win ~= curwin and point_in_win(spos, win, zindex) then return true end
   end
   return false
@@ -66,16 +67,20 @@ local guicursor = function(gcr, hl)
   return new_gc
 end
 
+---@type fun(x: any): integer
+local asinteger = tonumber
+
 M.enable = function()
   if augid then return end
   orig_guicursor = vim.opt.guicursor:get()
 
   api.nvim_set_hl(0, 'WincErrorCursor', { bg = '#ff0000', fg = '#ffffff' })
   augid = api.nvim_create_augroup('u.winc', { clear = true })
-  api.nvim_create_autocmd({ 'WinEnter', 'CursorMoved', 'WinClosed' }, {
+  api.nvim_create_autocmd({ 'WinEnter', 'CursorMoved', 'WinClosed', 'WinResized' }, {
     group = augid,
-    callback = function()
-      if check_cursor_covered() then
+    callback = function(ev)
+      local wins = ev.event == 'WinResized' and { asinteger(ev.match) } or nil
+      if check_cursor_covered(wins) then
         vim.opt.guicursor = guicursor(orig_guicursor, 'WincErrorCursor')
       elseif vim.opt.guicursor:get() ~= orig_guicursor then
         vim.opt.guicursor = orig_guicursor
