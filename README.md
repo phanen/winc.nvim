@@ -1,5 +1,8 @@
 To know if your cursor is postion below the visible window.
 
+> [!NOTE]
+> Maybe no longer needed after https://github.com/neovim/neovim/pull/37624
+
 ## TODO
 * parser border types
 * conceal/virt_text
